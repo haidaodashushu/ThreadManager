@@ -7,7 +7,7 @@ import java.util.LinkedList;
  * Created by 政魁 on 2019/2/19 14:54
  * E-Mail Address：wangzhengkui@yingzi.com
  */
-public abstract class Task implements Runnable{
+public abstract class Task<V> implements Runnable{
     public Task mRoot;
     public LinkedList<Task> mChildList;
 

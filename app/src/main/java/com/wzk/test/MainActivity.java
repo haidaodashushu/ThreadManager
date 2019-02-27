@@ -3,25 +3,39 @@ package com.wzk.test;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 
 import com.wzk.threadmanager.Task;
 import com.wzk.threadmanager.TaskGroup;
 import com.wzk.threadmanager.ThreadManager;
-import com.wzk.threadmanager.ThreadRoad;
+import com.wzk.threadmanager.ThreadPoolBuilder;
 
 public class MainActivity extends AppCompatActivity {
-    ThreadManager threadManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        threadManager = new ThreadManager();
+        findViewById(R.id.textId).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                test();
+            }
+        });
+
+        ThreadPoolBuilder builder = new ThreadPoolBuilder().createThreadPool().setName(Constants.ThreadPoolName.BACK_GROUND)
+                .createThreadPool().setName(Constants.ThreadPoolName.DEFAULT);
+        builder.build();
+    }
+
+    private void test() {
         final MyTask myTask = new MyTask(0);
         MyTask myTask1 = new MyTask(1);
         MyTask myTask2 = new MyTask(2);
         MyTask myTask3 = new MyTask(3);
         MyTask myTask4 = new MyTask(4);
         final MyTask myTask5 = new MyTask(5);
+        final MyTask myTask6 = new MyTask(6);
 
         final TaskGroup taskGroup = new TaskGroup();
 
@@ -29,22 +43,23 @@ public class MainActivity extends AppCompatActivity {
         taskGroup.addTask(myTask2);
         taskGroup.addTask(myTask3);
         myTask4.dependOn(myTask);
-        new Thread() {
+
+        ThreadManager threadManager = ThreadManager.getInstance();
+        threadManager.execute(taskGroup, new Task() {
             @Override
             public void run() {
-                super.run();
-                threadManager.execute(ThreadRoad.BACKGROUND_THREAD, myTask5);
+                Log.i("MyTask", "run: done taskGroup");
             }
-        }.start();
+        }, Constants.ThreadPoolName.DEFAULT);
 
-        new Thread() {
+        threadManager.execute(myTask5, new Task() {
             @Override
             public void run() {
-                super.run();
-                threadManager.execute(ThreadRoad.BACKGROUND_THREAD, taskGroup);
+                Log.i("MyTask", "run: done " + myTask5.id);
             }
-        }.start();
+        }, Constants.ThreadPoolName.BACK_GROUND);
 
+        threadManager.execute(myTask6);
     }
 
 
@@ -57,8 +72,21 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void run() {
+//            if (id == 3) {
+//                try {
+//                    Thread.sleep(10);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
             Log.i("MyTask", "run: id:" + id);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ThreadManager.getInstance().destroy();
     }
 }
 
