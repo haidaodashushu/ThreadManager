@@ -37,22 +37,22 @@ public class MainActivity extends AppCompatActivity {
         final MyTask myTask5 = new MyTask(5);
         final MyTask myTask6 = new MyTask(6);
 
-        final TaskGroup taskGroup = new TaskGroup();
+        final TaskGroup taskGroup = new TaskGroup("7");
 
         myTask1.dependOn(myTask4).dependOn(taskGroup);
+        taskGroup.dependOn(myTask1);
         taskGroup.addTask(myTask2);
         taskGroup.addTask(myTask3);
-        myTask4.dependOn(myTask);
 
         ThreadManager threadManager = ThreadManager.getInstance();
-        threadManager.execute(taskGroup, new Task() {
+        threadManager.execute(taskGroup, new Runnable() {
             @Override
             public void run() {
                 Log.i("MyTask", "run: done taskGroup");
             }
         }, Constants.ThreadPoolName.DEFAULT);
 
-        threadManager.execute(myTask5, new Task() {
+        threadManager.execute(myTask5, new Runnable() {
             @Override
             public void run() {
                 Log.i("MyTask", "run: done " + myTask5.id);
@@ -66,7 +66,12 @@ public class MainActivity extends AppCompatActivity {
     class MyTask extends Task {
         int id;
 
+        public MyTask(String name) {
+            super(name);
+        }
+
         public MyTask(int id) {
+            super(String.valueOf(id));
             this.id = id;
         }
 
