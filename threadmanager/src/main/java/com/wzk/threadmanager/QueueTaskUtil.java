@@ -1,5 +1,7 @@
 package com.wzk.threadmanager;
 
+import com.wzk.threadmanager.exception.CyclicDependenceException;
+
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -17,6 +19,10 @@ public class QueueTaskUtil {
         Task root = task.mRoot;
         while (root != null && root.mRoot != null) {
             root = root.mRoot;
+            //检测循环依赖
+            if (root == task) {
+                throw new CyclicDependenceException(task);
+            }
         }
 
         if (root == null) {

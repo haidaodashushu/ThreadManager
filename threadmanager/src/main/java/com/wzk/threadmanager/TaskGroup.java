@@ -8,7 +8,8 @@ import java.util.LinkedList;
  */
 public class TaskGroup extends Task {
     LinkedList<Task> mTaskList;
-    public TaskGroup() {
+    public TaskGroup(String name) {
+        super(name);
         mTaskList = new LinkedList<>();
     }
 

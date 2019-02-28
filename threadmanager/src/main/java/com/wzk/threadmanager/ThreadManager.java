@@ -35,7 +35,7 @@ public class ThreadManager {
         execute(task, callback, null);
     }
 
-    public void execute(final Task task, final Task callBack, String threadPollName) {
+    public void execute(final Task task, final Runnable callBack, String threadPollName) {
         WorkerRunnable<Task, Boolean> workerRunnable = new WorkerRunnable<Task, Boolean>() {
             @Override
             public Boolean call() throws Exception {

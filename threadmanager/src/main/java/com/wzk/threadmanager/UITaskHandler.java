@@ -17,7 +17,7 @@ class UITaskHandler {
 
     }
 
-    void handleTask(Task task) {
+    void handleTask(Runnable task) {
         synchronized (mMainLock) {
             if (mMainHandler == null) {
                 synchronized (mMainLock) {
@@ -28,11 +28,7 @@ class UITaskHandler {
         handleMainTask(mMainHandler, task);
     }
 
-    private void handleMainTask(Handler handler, Task task) {
-
-        Queue<Task> taskQueue = QueueTaskUtil.taskQueue(task);
-        while (taskQueue != null && !taskQueue.isEmpty()) {
-            handler.post(taskQueue.poll());
-        }
+    private void handleMainTask(Handler handler, Runnable task) {
+        handler.post(task);
     }
 }
