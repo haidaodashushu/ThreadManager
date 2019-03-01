@@ -15,20 +15,7 @@ public class QueueTaskUtil {
         if (task == null) {
             return null;
         }
-        //先找到树的跟节点；
-        Task root = task.mRoot;
-        while (root != null && root.mRoot != null) {
-            root = root.mRoot;
-            //检测循环依赖
-            if (root == task) {
-                throw new CyclicDependenceException(task);
-            }
-        }
-
-        if (root == null) {
-            root = task;
-        }
-
+        Task root = getRootTask(task);
         Queue<Task> taskQueue = new LinkedList<>();
         //对树做广度优先遍历
         Queue<Task> tempQueue = new LinkedList<>();
@@ -44,5 +31,22 @@ public class QueueTaskUtil {
             taskQueue.offer(temp);
         }
         return taskQueue;
+    }
+
+    public static Task getRootTask(Task task) {
+        //先找到树的跟节点；
+        Task root = task.mRoot;
+        while (root != null && root.mRoot != null) {
+            root = root.mRoot;
+            //检测循环依赖
+            if (root == task) {
+                throw new CyclicDependenceException(task);
+            }
+        }
+
+        if (root == null) {
+            root = task;
+        }
+        return root;
     }
 }

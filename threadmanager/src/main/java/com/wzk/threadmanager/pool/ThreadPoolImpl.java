@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -24,22 +25,6 @@ public class ThreadPoolImpl implements ThreadPool {
     static final String TAG = "ThreadPoolImpl";
     Map<String, ExecutorService> mThreadPoolMaps = new HashMap<>(8);
     ExecutorService mDefaultExecutorService;
-
-    @Override
-    public void submit(String threadPoolName, Runnable runnable) {
-        if (runnable == null) {
-            return;
-        }
-        if (TextUtils.isEmpty(threadPoolName)) {
-            if (mDefaultExecutorService == null) {
-                mDefaultExecutorService = createDefaultThreadPoolExecutor();
-            }
-            mDefaultExecutorService.execute(runnable);
-        } else {
-            ExecutorService existsThreadPool = getExistsThreadPool(threadPoolName);
-            existsThreadPool.execute(runnable);
-        }
-    }
 
     @Override
     public void init(List<ThreadPoolInfo> threadPoolInfos) {
@@ -62,6 +47,29 @@ public class ThreadPoolImpl implements ThreadPool {
     }
 
     @Override
+    public void execute(Runnable runnable) {
+        execute(null, runnable);
+    }
+
+    @Override
+    public void execute(String poolName, Runnable runnable) {
+        if (runnable == null) {
+            return;
+        }
+        ExecutorService existsThreadPool = getExistsThreadPool(poolName);
+        existsThreadPool.execute(runnable);
+    }
+
+    @Override
+    public Future submit(String poolName, Runnable runnable) {
+        if (runnable == null) {
+            return null;
+        }
+        ExecutorService existsThreadPool = getExistsThreadPool(poolName);
+        return existsThreadPool.submit(runnable);
+    }
+
+    @Override
     public void destory() {
         Set<Map.Entry<String, ExecutorService>> entrySet = mThreadPoolMaps.entrySet();
         for (Map.Entry<String, ExecutorService> executorServiceEntry : entrySet) {
@@ -69,20 +77,21 @@ public class ThreadPoolImpl implements ThreadPool {
         }
     }
 
-    private ThreadPoolExecutor createDefaultThreadPoolExecutor() {
-        ThreadPoolExecutor threadPoolExecutor = createThreadPoolExecutor(
-                ThreadPoolBuilder.getDefaultCorePoolSize(), ThreadPoolBuilder.getDefaultMaxPoolSize(), ThreadPoolBuilder.getDefaultKeepAliveTime(),
-                ThreadPoolBuilder.getDefaultWorkQueueSize(), "wzk_default");
-        threadPoolExecutor.allowCoreThreadTimeOut(true);
-        return threadPoolExecutor;
-    }
-
-    private ThreadPoolExecutor createThreadPoolExecutor(int coreSize, int maxThreadSize, int keepAliveTime, int workQueueSize, String name) {
+    @Override
+    public ThreadPoolExecutor createThreadPoolExecutor(int coreSize, int maxThreadSize, int keepAliveTime, int workQueueSize, String name) {
         BlockingQueue<Runnable> poolWorkQueue =
                 new LinkedBlockingQueue<Runnable>(workQueueSize);
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
                 coreSize, maxThreadSize, keepAliveTime, TimeUnit.SECONDS,
                 poolWorkQueue, new DefaultThreadFactory(name));
+        threadPoolExecutor.allowCoreThreadTimeOut(true);
+        return threadPoolExecutor;
+    }
+
+    private ThreadPoolExecutor createDefaultThreadPoolExecutor() {
+        ThreadPoolExecutor threadPoolExecutor = createThreadPoolExecutor(
+                ThreadPoolBuilder.getDefaultCorePoolSize(), ThreadPoolBuilder.getDefaultMaxPoolSize(), ThreadPoolBuilder.getDefaultKeepAliveTime(),
+                ThreadPoolBuilder.getDefaultWorkQueueSize(), "wzk_default");
         threadPoolExecutor.allowCoreThreadTimeOut(true);
         return threadPoolExecutor;
     }
@@ -96,6 +105,13 @@ public class ThreadPoolImpl implements ThreadPool {
     }
 
     private ExecutorService getExistsThreadPool(String threadPoolName) {
+        if (TextUtils.isEmpty(threadPoolName)) {
+            if (mDefaultExecutorService == null) {
+                mDefaultExecutorService = createDefaultThreadPoolExecutor();
+            }
+            return mDefaultExecutorService;
+        }
+
         ExecutorService threadPool = getThreadPool(threadPoolName);
         if (null == threadPool) {
             throw new IllegalArgumentException(String.format("thread pool %s not exists", threadPoolName));

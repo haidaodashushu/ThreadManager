@@ -5,6 +5,7 @@ import android.util.Log;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by 政魁 on 2019/2/19 14:38
@@ -35,8 +36,14 @@ public class ThreadManager {
         execute(task, callback, null);
     }
 
-    public void execute(final Task task, final Runnable callBack, String threadPollName) {
-        WorkerRunnable<Task, Boolean> workerRunnable = new WorkerRunnable<Task, Boolean>() {
+    /**
+     *
+     * @param task 任务树，该task
+     * @param callBack
+     * @param threadPollName
+     */
+    public void execute(Task task, final Runnable callBack, String threadPollName) {
+        WorkerRunnableQueue<Task, Boolean> workerRunnableQueue = new WorkerRunnableQueue<Task, Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 while (taskQueue != null && !taskQueue.isEmpty()) {
@@ -48,7 +55,7 @@ public class ThreadManager {
                 return true;
             }
         };
-        FutureTask futureTask = new FutureTask<Boolean>(workerRunnable) {
+        FutureTask futureTask = new FutureTask<Boolean>(workerRunnableQueue) {
             @Override
             protected void done() {
                 super.done();
@@ -59,8 +66,41 @@ public class ThreadManager {
                 }
             }
         };
-        workerRunnable.taskQueue = QueueTaskUtil.taskQueue(task);
-        ThreadPoolManager.getInstance().submit(threadPollName, futureTask);
+        workerRunnableQueue.taskQueue = QueueTaskUtil.taskQueue(task);
+        ThreadPoolManager.getInstance().execute(threadPollName, futureTask);
+    }
+
+    /**
+     *
+     * @param task
+     * @param callBack
+     * @param threadPollName
+     * @param multiThread 是否使用多个线程
+     */
+    public void execute(Task task, final Runnable callBack, String threadPollName, boolean multiThread) {
+        if (!multiThread) {
+            execute(task, callBack, threadPollName);
+            return;
+        }
+
+        final AtomicInteger atomicInteger = new AtomicInteger(0);
+        ThreadPoolManager.OnResultListener resultListener = new ThreadPoolManager.OnResultListener() {
+            @Override
+            public void onResult(Object object) {
+                int decrementAndGet = atomicInteger.decrementAndGet();
+                if (decrementAndGet == 0) {
+                    mUiTaskHandler.handleTask(callBack);
+                }
+            }
+        };
+        Queue<Task> taskQueue = QueueTaskUtil.taskQueue(task);
+        atomicInteger.set(taskQueue.size());
+        while (!taskQueue.isEmpty()) {
+            taskQueue.poll().setOnResultListener(resultListener);
+        }
+        Task root = QueueTaskUtil.getRootTask(task);
+        ThreadPoolManager.getInstance().dependExecute(root, resultListener);
+
     }
 
     public void destroy() {
@@ -68,8 +108,11 @@ public class ThreadManager {
         ThreadPoolManager.getInstance().destroy();
     }
 
-    private static abstract class WorkerRunnable<Task, Result> implements Callable<Result> {
+    private static abstract class WorkerRunnableQueue<Task, Result> implements Callable<Result> {
         Queue<Task> taskQueue;
     }
 
+    private static abstract class WorkerRunnable<Task, Result> implements Callable<Result> {
+        Task task;
+    }
 }

@@ -6,7 +6,6 @@ import android.util.Log;
 import android.view.View;
 
 import com.wzk.threadmanager.Task;
-import com.wzk.threadmanager.TaskGroup;
 import com.wzk.threadmanager.ThreadManager;
 import com.wzk.threadmanager.ThreadPoolBuilder;
 
@@ -29,62 +28,57 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void test() {
-        final MyTask myTask = new MyTask(0);
-        MyTask myTask1 = new MyTask(1);
-        MyTask myTask2 = new MyTask(2);
-        MyTask myTask3 = new MyTask(3);
-        MyTask myTask4 = new MyTask(4);
-        final MyTask myTask5 = new MyTask(5);
-        final MyTask myTask6 = new MyTask(6);
-
-        final TaskGroup taskGroup = new TaskGroup("7");
-
-        myTask1.dependOn(myTask4).dependOn(taskGroup);
-        taskGroup.dependOn(myTask1);
-        taskGroup.addTask(myTask2);
-        taskGroup.addTask(myTask3);
-
         ThreadManager threadManager = ThreadManager.getInstance();
-        threadManager.execute(taskGroup, new Runnable() {
+        int i = 10;
+        final MyTask myTask10 = new MyTask(i++);
+        MyTask task11 = new MyTask(i++);
+        MyTask task12 = new MyTask(i++);
+        MyTask task13 = new MyTask(i++);
+        MyTask task14 = new MyTask(i++);
+        MyTask task15 = new MyTask(i++);
+        MyTask task16 = new MyTask(i++);
+        MyTask task17 = new MyTask(i++);
+        MyTask task18 = new MyTask(i++);
+        MyTask task19 = new MyTask(i++);
+        task19.dependOn(task13);
+        task13.dependOn(task11);
+        task14.dependOn(task11);
+        task15.dependOn(task11);
+
+        task16.dependOn(task12);
+        task17.dependOn(task12);
+        task18.dependOn(task12);
+
+        task11.dependOn(myTask10);
+        task12.dependOn(myTask10);
+
+        threadManager.execute(task16, new Runnable() {
             @Override
             public void run() {
-                Log.i("MyTask", "run: done taskGroup");
+                Log.i("MyTask", "run: done:" + myTask10.get());
             }
-        }, Constants.ThreadPoolName.DEFAULT);
-
-        threadManager.execute(myTask5, new Runnable() {
-            @Override
-            public void run() {
-                Log.i("MyTask", "run: done " + myTask5.id);
-            }
-        }, Constants.ThreadPoolName.BACK_GROUND);
-
-        threadManager.execute(myTask6);
+        }, Constants.ThreadPoolName.BACK_GROUND, true);
     }
 
 
     class MyTask extends Task {
         int id;
-
-        public MyTask(String name) {
-            super(name);
+        @Override
+        public Object runTask() {
+            if (id == 6) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            Log.i("MyTask", "run: id:" + id +"，thread:"+ Thread.currentThread().getName());
+            return id;
         }
 
         public MyTask(int id) {
             super(String.valueOf(id));
             this.id = id;
-        }
-
-        @Override
-        public void run() {
-//            if (id == 3) {
-//                try {
-//                    Thread.sleep(10);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-            Log.i("MyTask", "run: id:" + id);
         }
     }
 
