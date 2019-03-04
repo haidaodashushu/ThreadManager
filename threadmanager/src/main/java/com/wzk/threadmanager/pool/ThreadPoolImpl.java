@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -38,9 +39,17 @@ public class ThreadPoolImpl implements ThreadPool {
             }
             ensureThreadPoolEnable(threadPoolInfo);
             Log.i(TAG, "init: " + threadPoolInfo.toString());
-            ThreadPoolExecutor threadPoolExecutor = createThreadPoolExecutor(
-                    threadPoolInfo.corePoolSize, threadPoolInfo.maxPoolSize, threadPoolInfo.keepAliveTime,
-                    threadPoolInfo.workQueueSize, threadPoolInfo.name);
+            ThreadPoolExecutor threadPoolExecutor;
+            if (threadPoolInfo.multiThread) {
+                BlockingQueue<Runnable> workQueue = new LinkedBlockingDeque<Runnable>(threadPoolInfo.workQueueSize);
+                threadPoolExecutor = new DependThreadPoolExecutor(
+                        threadPoolInfo.corePoolSize, threadPoolInfo.maxPoolSize, threadPoolInfo.keepAliveTime,
+                        workQueue, threadPoolInfo.name);
+            } else {
+                threadPoolExecutor = createThreadPoolExecutor(
+                        threadPoolInfo.corePoolSize, threadPoolInfo.maxPoolSize, threadPoolInfo.keepAliveTime,
+                        threadPoolInfo.workQueueSize, threadPoolInfo.name);
+            }
             threadPoolExecutor.allowCoreThreadTimeOut(true);
             mThreadPoolMaps.put(threadPoolInfo.name, threadPoolExecutor);
         }
@@ -57,6 +66,7 @@ public class ThreadPoolImpl implements ThreadPool {
             return;
         }
         ExecutorService existsThreadPool = getExistsThreadPool(poolName);
+
         existsThreadPool.execute(runnable);
     }
 
@@ -70,7 +80,7 @@ public class ThreadPoolImpl implements ThreadPool {
     }
 
     @Override
-    public void destory() {
+    public void destroy() {
         Set<Map.Entry<String, ExecutorService>> entrySet = mThreadPoolMaps.entrySet();
         for (Map.Entry<String, ExecutorService> executorServiceEntry : entrySet) {
             executorServiceEntry.getValue().shutdown();
@@ -86,6 +96,11 @@ public class ThreadPoolImpl implements ThreadPool {
                 poolWorkQueue, new DefaultThreadFactory(name));
         threadPoolExecutor.allowCoreThreadTimeOut(true);
         return threadPoolExecutor;
+    }
+
+    @Override
+    public ThreadPoolExecutor getThreadPoolExecutor(String poolName) {
+        return (ThreadPoolExecutor) getExistsThreadPool(poolName);
     }
 
     private ThreadPoolExecutor createDefaultThreadPoolExecutor() {

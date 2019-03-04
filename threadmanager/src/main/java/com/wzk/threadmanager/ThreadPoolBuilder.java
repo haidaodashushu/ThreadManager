@@ -70,6 +70,11 @@ public class ThreadPoolBuilder {
         return this;
     }
 
+    public ThreadPoolBuilder setMultiThread(boolean multiThread) {
+        getLastThreadPollInfo().setMultiThread(multiThread);
+        return this;
+    }
+
     public static int getDefaultCorePoolSize() {
         return CORE_POOL_SIZE;
     }

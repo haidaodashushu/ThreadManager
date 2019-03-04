@@ -15,5 +15,6 @@ public interface ThreadPool {
     Future submit(String poolName, Runnable runnable);
     void init(List<ThreadPoolInfo> threadPoolInfos);
     ThreadPoolExecutor createThreadPoolExecutor(int coreSize, int maxThreadSize, int keepAliveTime, int workQueueSize, String name);
-    void destory();
+    ThreadPoolExecutor getThreadPoolExecutor(String poolName);
+    void destroy();
 }

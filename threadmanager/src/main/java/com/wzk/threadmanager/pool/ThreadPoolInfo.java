@@ -24,6 +24,7 @@ public class ThreadPoolInfo {
 
     int workQueueSize;
 
+    boolean multiThread;
     public ThreadPoolInfo setName(String name) {
         this.name = name;
         return this;
@@ -45,6 +46,34 @@ public class ThreadPoolInfo {
         this.workQueueSize = workQueueSize;
     }
 
+    public void setMultiThread(boolean multiThread) {
+        this.multiThread = multiThread;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getMaxPoolSize() {
+        return maxPoolSize;
+    }
+
+    public int getCorePoolSize() {
+        return corePoolSize;
+    }
+
+    public int getKeepAliveTime() {
+        return keepAliveTime;
+    }
+
+    public int getWorkQueueSize() {
+        return workQueueSize;
+    }
+
+    public boolean isMultiThread() {
+        return multiThread;
+    }
+
     @Override
     public String toString() {
         return "ThreadPoolInfo{" +
@@ -53,6 +82,7 @@ public class ThreadPoolInfo {
                 ", corePoolSize=" + corePoolSize +
                 ", keepAliveTime=" + keepAliveTime +
                 ", workQueueSize=" + workQueueSize +
+                ", multiThread=" + multiThread +
                 '}';
     }
 }

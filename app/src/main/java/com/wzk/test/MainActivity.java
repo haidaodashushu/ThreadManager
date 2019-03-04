@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ThreadPoolBuilder builder = new ThreadPoolBuilder().createThreadPool().setName(Constants.ThreadPoolName.BACK_GROUND)
+        ThreadPoolBuilder builder = new ThreadPoolBuilder().createThreadPool().setMultiThread(true).setName(Constants.ThreadPoolName.BACK_GROUND)
                 .createThreadPool().setName(Constants.ThreadPoolName.DEFAULT);
         builder.build();
     }
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 Log.i("MyTask", "run: done:" + myTask10.get());
             }
-        }, Constants.ThreadPoolName.BACK_GROUND, true);
+        }, Constants.ThreadPoolName.BACK_GROUND);
     }
 
 
