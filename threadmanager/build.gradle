@@ -5,7 +5,7 @@ publish {
     userOrg = 'wzkui'//bintray.com用户名
     groupId = 'com.wzkui'//jcenter上的路径
     artifactId = 'threadmanager'//项目名称
-    publishVersion = '1.0.1'//版本号
+    publishVersion = '1.0.2'//版本号
     desc = 'Android线程依赖'//描述，不重要
     website = 'https://github.com/haidaodashushu/ThreadManager'
 }
@@ -14,7 +14,7 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        minSdkVersion 25
+        minSdkVersion 15
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
