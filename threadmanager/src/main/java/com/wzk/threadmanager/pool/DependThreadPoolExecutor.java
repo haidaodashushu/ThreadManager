@@ -57,10 +57,10 @@ public class DependThreadPoolExecutor extends ThreadPoolExecutor {
 //            throw new IllegalArgumentException("this ThreadPoolExecutor can only submit DependFutureTask or Task");
             return;
         }
-        if (task.mChildList == null) {
+        if (task.getChildList() == null) {
             return;
         }
-        Iterator<Task> iterator = task.mChildList.iterator();
+        Iterator<Task> iterator = task.getChildList().iterator();
         while (iterator.hasNext()) {
             Task runTask = iterator.next();
             if (runTask != null && runTask != task && runTask.isIdle()) {

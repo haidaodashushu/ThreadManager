@@ -7,24 +7,24 @@ import java.util.concurrent.Callable;
  * E-Mail Address：wangzhengkui@yingzi.com
  */
 class TaskWrap<V>{
-    private Task task;
+    private Task<V> task;
     private TaskCallable<V> taskCallable;
     private V result;
-    ThreadPoolManager.OnResultListener<V> resultListener;
-    public TaskWrap(Task<V> task) {
+    private ThreadPoolManager.OnResultListener<V> resultListener;
+    TaskWrap(Task<V> task) {
         this.task = task;
-        taskCallable = new TaskCallable();
+        taskCallable = new TaskCallable<>();
     }
 
-    public void run() {
-        result = (V) taskCallable.call();
+    void run() {
+        result = taskCallable.call();
         //执行完成，则将结果返回
         if (resultListener != null) {
             resultListener.onResult(result);
         }
     }
 
-    public void setOnResultListener(ThreadPoolManager.OnResultListener<V> listener) {
+    void setOnResultListener(ThreadPoolManager.OnResultListener<V> listener) {
         resultListener = listener;
     }
 
@@ -39,7 +39,7 @@ class TaskWrap<V>{
         }
     }
 
-    public V get() {
+    V get() {
         return result;
     }
 

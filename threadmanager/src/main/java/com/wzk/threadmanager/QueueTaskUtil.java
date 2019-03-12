@@ -3,6 +3,7 @@ package com.wzk.threadmanager;
 import com.wzk.threadmanager.exception.CyclicDependenceException;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 /**
@@ -22,7 +23,7 @@ public class QueueTaskUtil {
         tempQueue.offer(root);
         while (!tempQueue.isEmpty()) {
             Task temp = tempQueue.poll();
-            LinkedList<Task> childList = temp.mChildList;
+            List<Task> childList = temp.getChildList();
             if (childList != null && childList.size() > 0) {
                 for (Task childTask : childList) {
                     tempQueue.offer(childTask);
@@ -48,5 +49,19 @@ public class QueueTaskUtil {
             root = task;
         }
         return root;
+    }
+
+    static void checkCyclicDepend(Task child, Task parent) {
+        if (child.mChildList == null || child.mChildList.size() == 0) {
+            return;
+        }
+        List<Task> childList = child.getChildList();
+        for (Task task : childList) {
+            if (task == parent) {
+                throw new CyclicDependenceException(task);
+            } else {
+                checkCyclicDepend(task, parent);
+            }
+        }
     }
 }
