@@ -10,7 +10,7 @@ import java.util.List;
  * E-Mail Address：wangzhengkui@yingzi.com
  */
 public abstract class Task<V> implements Runnable {
-    Task<V> mRoot;
+    Task<V> mParent;
     List<Task<V>> mChildList;
     private String mName;
     private TaskWrap<V> mTaskWrap;
@@ -32,17 +32,21 @@ public abstract class Task<V> implements Runnable {
         if (task == this) {
             return this;
         }
-        if (mRoot != null) {
+        if (mParent != null) {
             throw new DependenceException(this);
         }
         //检查循环依赖
         QueueTaskUtil.checkCyclicDepend(this, task);
-        this.mRoot = task;
+        this.mParent = task;
         if (task.mChildList == null) {
             task.mChildList = new LinkedList<>();
         }
         task.mChildList.add(this);
         return task;
+    }
+
+    public Task getParent() {
+        return mParent;
     }
 
     public List<Task<V>> getChildList() {
@@ -56,6 +60,7 @@ public abstract class Task<V> implements Runnable {
     public V get() {
         return mTaskWrap.get();
     }
+
     @Override
     public String toString() {
         return "Task{" +

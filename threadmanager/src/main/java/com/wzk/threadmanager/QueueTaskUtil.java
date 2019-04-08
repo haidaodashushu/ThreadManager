@@ -36,9 +36,9 @@ public class QueueTaskUtil {
 
     public static Task getRootTask(Task task) {
         //先找到树的跟节点；
-        Task root = task.mRoot;
-        while (root != null && root.mRoot != null) {
-            root = root.mRoot;
+        Task root = task.mParent;
+        while (root != null && root.mParent != null) {
+            root = root.mParent;
             //检测循环依赖
             if (root == task) {
                 throw new CyclicDependenceException(task);

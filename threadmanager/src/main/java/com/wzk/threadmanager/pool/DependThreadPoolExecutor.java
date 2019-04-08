@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class DependThreadPoolExecutor extends ThreadPoolExecutor {
 
-    public DependThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, BlockingQueue workQueue, String name) {
+    DependThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, BlockingQueue workQueue, String name) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS, workQueue, new DefaultThreadFactory(name));
     }
 
@@ -57,7 +57,7 @@ public class DependThreadPoolExecutor extends ThreadPoolExecutor {
 //            throw new IllegalArgumentException("this ThreadPoolExecutor can only submit DependFutureTask or Task");
             return;
         }
-        if (task.getChildList() == null) {
+        if (task == null || task.getChildList() == null) {
             return;
         }
         Iterator<Task> iterator = task.getChildList().iterator();
