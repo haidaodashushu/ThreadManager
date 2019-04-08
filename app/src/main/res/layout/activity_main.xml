@@ -10,11 +10,20 @@
         android:id="@+id/textId"
         android:layout_width="66dp"
         android:layout_height="35dp"
-        android:text="start"
+        android:layout_marginTop="80dp"
         android:gravity="center"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="start"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <com.wzk.test.view.NodeTreeView
+        android:id="@+id/nodeTreeView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/textId"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </android.support.constraint.ConstraintLayout>

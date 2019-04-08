@@ -5,12 +5,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
+import com.wzk.test.view.NodeTreeView;
 import com.wzk.threadmanager.Task;
 import com.wzk.threadmanager.ThreadManager;
 import com.wzk.threadmanager.ThreadPoolBuilder;
 
 public class MainActivity extends AppCompatActivity {
-
+    NodeTreeView mNodeTreeView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
         ThreadPoolBuilder builder = new ThreadPoolBuilder().createThreadPool().setMultiThread(true).setName(Constants.ThreadPoolName.BACK_GROUND)
                 .createThreadPool().setName(Constants.ThreadPoolName.DEFAULT);
         builder.build();
+
+        mNodeTreeView = findViewById(R.id.nodeTreeView);
     }
 
     private void test() {
@@ -51,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
 
         task11.dependOn(myTask10);
         task12.dependOn(myTask10);
+
+        mNodeTreeView.setRootTask(myTask10);
 
         threadManager.execute(task16, new Runnable() {
             @Override
